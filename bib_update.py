@@ -178,7 +178,9 @@ for j in range(len(bp.entries)):
                 sys.stdout.write("No new version found.\n")
 
         if aphsearch and \
-           not('arxivsearched' in thisref.keys()) and \
+           (not('arxivsearched' in thisref.keys()) or \
+           (not('Eprint' in thisref.keys()) or \
+            not('eprint' in thisref.keys()))) and \
            thisref['year'] >= '1991':
             aphsearch = False
             sys.stdout.write('No preprint associated with ' + thisref['ID'] +
