@@ -34,7 +34,8 @@ def checkRef(entry, confirm=False):
         try:
             for i in res:
                 try:    # only want things that are published
-                    print(i.pub)
+                    if not(args.quiet):
+                        print(i.pub)
                     if re.search('arxiv', i.pub, re.IGNORECASE):
                         continue
                 except:
@@ -120,6 +121,8 @@ parser.add_argument('--confirm', '-c', action='store_true', default=False,
 parser.add_argument('--arXiv', '-a', action='store_true', default=False,
                     help='For published entries, Search ADS for an arXiv \
                           entries if not present.')
+parser.add_argument('--quiet', action='store_true', default=False,
+                    help='Suppress printed output. (Overriden by --confirm).')
 args = parser.parse_args()
 
 if os.path.isfile(args.bibfile):
@@ -155,19 +158,22 @@ for j in range(len(bp.entries)):
             if 'arxivid' in thisref.keys():
                 match = True
             else:
-                sys.stdout.write(thisref['ID'] + \
-                                 ' does not have a journal entry or arXiv ID.\n')
+                if not(args.quiet):
+                    sys.stdout.write(thisref['ID'] + \
+                                     ' does not have a journal entry or arXiv ID.\n')
 
         if match:
             match = False   # reset
-            sys.stdout.write('Searching for update to ' + thisref['ID'] +
-                             '...')
+            if not(args.quiet):
+                sys.stdout.write('Searching for update to ' + thisref['ID'] +
+                                 '...')
             res = checkRef(thisref, args.confirm)
             if res:
                 upcount += 1
                 bp.entries[j] = res
-                sys.stdout.write(thisref['ID'] +
-                                 " updated. Please verify changes.\n")
+                if not(args.quiet):
+                    sys.stdout.write(thisref['ID'] +
+                                     " updated. Please verify changes.\n")
                 newbib = to_bibtex(bp)
                 if upcount + acount % 20 == 0:
                     outf = codecs.open(args.bibfile, 'w', 'utf-8')
@@ -175,7 +181,8 @@ for j in range(len(bp.entries)):
                     outf.close()
 
             else:
-                sys.stdout.write("No new version found.\n")
+                if not(args.quiet):
+                    sys.stdout.write("No new version found.\n")
 
         if aphsearch and \
            (not('arxivsearched' in thisref.keys()) or \
@@ -183,23 +190,27 @@ for j in range(len(bp.entries)):
             not('eprint' in thisref.keys()))) and \
            thisref['year'] >= '1991':
             aphsearch = False
-            sys.stdout.write('No preprint associated with ' + thisref['ID'] +
-                             ', checking...\n')
+            if not(args.quiet):
+                sys.stdout.write('No preprint associated with ' + thisref['ID'] +
+                                 ', checking...\n')
             res = aref(thisref, args.confirm)
             if res and not('arxivsearched' in thisref.keys()):
                 acount += 1
                 bp.entries[j] = res
-                sys.stdout.write(thisref['ID'] +
-                                 " updated with a preprint. Please verify changes.\n")
+                if not(args.quiet):
+                    sys.stdout.write(thisref['ID'] +
+                                     " updated with a preprint. Please verify changes.\n")
                 newbib = to_bibtex(bp)
                 if upcount + acount % 20 == 0:
                     outf = codecs.open(args.bibfile, 'w', 'utf-8')
                     outf.write(newbib)
                     outf.close()
             elif 'arxivsearched' in thisref.keys():
-                sys.stdout.write("No preprint found. Will not search again.\n")
+                if not(args.quiet):
+                    sys.stdout.write("No preprint found. Will not search again.\n")
             else:
-                sys.stdout.write("No preprint found.\n")
+                if not(args.quiet):
+                    sys.stdout.write("No preprint found.\n")
 
 outf = codecs.open(args.bibfile, 'w', 'utf-8')
 try:
@@ -208,6 +219,7 @@ except:
     outf.write(to_bibtex(bp))
 outf.close()
 
-sys.stdout.write(str(upcount) + ' reference(s) updated with journal articles.\n')
-if args.arXiv:
+if not(args.quiet):
+    sys.stdout.write(str(upcount) + ' reference(s) updated with journal articles.\n')
+if args.arXiv and not(args.quiet):
     sys.stdout.write(str(acount) + ' reference(s) updated with preprints.\n')
