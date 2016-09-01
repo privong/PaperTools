@@ -32,6 +32,9 @@ for line in texfile.readlines():
     elif line[-1] == '}' or line[-2:] == '\\\\':
         # end of a command, skip line
         skip = 1
+    elif line[0] == '%':
+        # skip lines that are entirely comments
+        skip = 1
     else:
         if re.search(';', line[-2:]) or \
            re.search(',', line[-2:]):
