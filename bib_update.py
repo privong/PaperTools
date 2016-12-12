@@ -70,7 +70,8 @@ def checkRef(entry, confirm=False):
                         entry['pages'] = i.page[0]
                     except:
                         pass
-                    entry['adsurl'] = 'http://adsabs.harvard.edu/abs/' + i.bibcode
+                    entry['adsurl'] = 'http://adsabs.harvard.edu/abs/' + \
+                                      i.bibcode
                     if not(re.search(i.year, entry['ID'])):
                         sys.stderr.write("Warning: Updating year of: " +
                                          entry['ID'] +
@@ -112,15 +113,15 @@ def aref(entry, confirm=False):
     entry['arxivsearched'] = 'True'
     return entry
 
-parser = argparse.ArgumentParser(description="Update arXiv entries in a bibtex \
-                                 file with subsequently published papers.")
+parser = argparse.ArgumentParser(description="Update arXiv entries in a \
+bibtex file with subsequently published papers.")
 parser.add_argument('bibfile', action='store', type=str, default=False,
                     help='BibTeX file')
 parser.add_argument('--confirm', '-c', action='store_true', default=False,
                     help='If passed, confirm each entry.')
 parser.add_argument('--arXiv', '-a', action='store_true', default=False,
                     help='For published entries, Search ADS for an arXiv \
-                          entries if not present.')
+entries if not present.')
 parser.add_argument('--quiet', action='store_true', default=False,
                     help='Suppress printed output. (Overriden by --confirm).')
 args = parser.parse_args()
@@ -160,7 +161,8 @@ for j in range(len(bp.entries)):
             else:
                 if not(args.quiet):
                     sys.stdout.write(thisref['ID'] + \
-                                     ' does not have a journal entry or arXiv ID.\n')
+                                     ' does not have a journal entry or \
+arXiv ID.\n')
 
         if match:
             match = False   # reset
@@ -191,15 +193,16 @@ for j in range(len(bp.entries)):
            thisref['year'] >= '1991':
             aphsearch = False
             if not(args.quiet):
-                sys.stdout.write('No preprint associated with ' + thisref['ID'] +
-                                 ', checking...\n')
+                sys.stdout.write('No preprint associated with ' +
+                                 thisref['ID'] + ', checking...\n')
             res = aref(thisref, args.confirm)
             if res and not('arxivsearched' in thisref.keys()):
                 acount += 1
                 bp.entries[j] = res
                 if not(args.quiet):
                     sys.stdout.write(thisref['ID'] +
-                                     " updated with a preprint. Please verify changes.\n")
+                                     " updated with a preprint. Please \
+verify changes.\n")
                 newbib = to_bibtex(bp)
                 if upcount + acount % 20 == 0:
                     outf = codecs.open(args.bibfile, 'w', 'utf-8')
@@ -207,7 +210,8 @@ for j in range(len(bp.entries)):
                     outf.close()
             elif 'arxivsearched' in thisref.keys():
                 if not(args.quiet):
-                    sys.stdout.write("No preprint found. Will not search again.\n")
+                    sys.stdout.write("No preprint found. Will not search \
+again.\n")
             else:
                 if not(args.quiet):
                     sys.stdout.write("No preprint found.\n")
@@ -220,6 +224,7 @@ except:
 outf.close()
 
 if not(args.quiet):
-    sys.stdout.write(str(upcount) + ' reference(s) updated with journal articles.\n')
+    sys.stdout.write(str(upcount) +
+                     ' reference(s) updated with journal articles.\n')
 if args.arXiv and not(args.quiet):
     sys.stdout.write(str(acount) + ' reference(s) updated with preprints.\n')
