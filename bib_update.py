@@ -1,18 +1,28 @@
 #!/usr/bin/env python2
-#
-# Load a bibtext file, find the arXiv entries within the past X years and
-# query ADS to see if the paper has been published. If so, update the bibtex
-# entry.
+"""
+Load a bibtext file, find the arXiv entries within the past X years and
+query ADS to see if the paper has been published. If so, update the bibtex
+entry.
+"""
 
-from bibtexparser.bparser import BibTexParser
-from bibtexparser.bwriter import to_bibtex
+
 import sys
 import os
 import shutil
 import re
 import codecs   # for unicode
-import ads  # https://github.com/andycasey/ads
 import argparse
+try:
+    import ads  # https://github.com/andycasey/ads
+except ImportError:
+    sys.stderr.write('Error: could not import ads module.\n\n')
+    sys.exit(-1)
+try:
+    from bibtexparser.bparser import BibTexParser
+    from bibtexparser.bwriter import to_bibtex
+except ImportError:
+    sys.stderr.write('Error: could not import bibtexparser module.\n\n')
+    sys.exit(-1)
 
 
 def checkRef(entry, confirm=False):
@@ -113,118 +123,130 @@ def aref(entry, confirm=False):
     entry['arxivsearched'] = 'True'
     return entry
 
-parser = argparse.ArgumentParser(description="Update arXiv entries in a \
+
+
+def main():
+    """
+    main routine
+    """
+    parser = argparse.ArgumentParser(description="Update arXiv entries in a \
 bibtex file with subsequently published papers.")
-parser.add_argument('bibfile', action='store', type=str, default=False,
-                    help='BibTeX file')
-parser.add_argument('--confirm', '-c', action='store_true', default=False,
-                    help='If passed, confirm each entry.')
-parser.add_argument('--arXiv', '-a', action='store_true', default=False,
-                    help='For published entries, Search ADS for an arXiv \
+    parser.add_argument('bibfile', action='store', type=str, default=False,
+                        help='BibTeX file')
+    parser.add_argument('--confirm', '-c', action='store_true', default=False,
+                        help='If passed, confirm each entry.')
+    parser.add_argument('--arXiv', '-a', action='store_true', default=False,
+                        help='For published entries, Search ADS for an arXiv \
 entries if not present.')
-parser.add_argument('--quiet', action='store_true', default=False,
-                    help='Suppress printed output. (Overriden by --confirm).')
-args = parser.parse_args()
+    parser.add_argument('--quiet', action='store_true', default=False,
+                        help='Suppress printed output. (Overriden by \
+--confirm).')
+    args = parser.parse_args()
 
-if os.path.isfile(args.bibfile):
-    bib = codecs.open(args.bibfile, 'r', 'utf-8')
-    bp = BibTexParser(bib.read())
-    bib.close()
-else:
-    sys.stderr.write("Error, could not open: " + args.bibfile + ".\n")
-    sys.exit(1)
+    if os.path.isfile(args.bibfile):
+        bib = codecs.open(args.bibfile, 'r', 'utf-8')
+        bp = BibTexParser(bib.read())
+        bib.close()
+    else:
+        sys.stderr.write("Error, could not open: " + args.bibfile + ".\n")
+        sys.exit(1)
 
-# back up library before we start
-shutil.copy2(args.bibfile, args.bibfile + 'ads_updater.bak')
+    # back up library before we start
+    shutil.copy2(args.bibfile, args.bibfile + 'ads_updater.bak')
 
-upcount = 0
-acount = 0
-match = False
-aphsearch = False
-j = 0
-for j in range(len(bp.entries)):
-    thisref = bp.entries[j]
-    if thisref['ENTRYTYPE'] == 'article':  # not interested in anything else
-        if 'journal' in thisref.keys():
-            if re.search('arxiv', thisref['journal'], re.IGNORECASE):
-                match = True
-            elif 'eprint' not in thisref.keys() and args.arXiv:
-                aphsearch = True
-        elif 'Journal' in thisref.keys():
-            if re.search('arxiv', thisref['Journal'], re.IGNORECASE):
-                match = True
-            elif 'eprint' not in thisref.keys() and args.arXiv:
-                aphsearch = True
-        else:
-            if 'arxivid' in thisref.keys():
-                match = True
+    upcount = 0
+    acount = 0
+    match = False
+    aphsearch = False
+    j = 0
+    for j in range(len(bp.entries)):
+        thisref = bp.entries[j]
+        if thisref['ENTRYTYPE'] == 'article':  # not interested in other types 
+            if 'journal' in thisref.keys():
+                if re.search('arxiv', thisref['journal'], re.IGNORECASE):
+                    match = True
+                elif 'eprint' not in thisref.keys() and args.arXiv:
+                    aphsearch = True
+            elif 'Journal' in thisref.keys():
+                if re.search('arxiv', thisref['Journal'], re.IGNORECASE):
+                    match = True
+                elif 'eprint' not in thisref.keys() and args.arXiv:
+                    aphsearch = True
             else:
-                if not(args.quiet):
-                    sys.stdout.write(thisref['ID'] + \
-                                     ' does not have a journal entry or \
+                if 'arxivid' in thisref.keys():
+                    match = True
+                else:
+                    if not(args.quiet):
+                        sys.stdout.write(thisref['ID'] + \
+                                         ' does not have a journal entry or \
 arXiv ID.\n')
 
-        if match:
-            match = False   # reset
-            if not(args.quiet):
-                sys.stdout.write('Searching for update to ' + thisref['ID'] +
-                                 '...')
-            res = checkRef(thisref, args.confirm)
-            if res:
-                upcount += 1
-                bp.entries[j] = res
+            if match:
+                match = False   # reset
                 if not(args.quiet):
-                    sys.stdout.write(thisref['ID'] +
-                                     " updated. Please verify changes.\n")
-                newbib = to_bibtex(bp)
-                if upcount + acount % 20 == 0:
-                    outf = codecs.open(args.bibfile, 'w', 'utf-8')
-                    outf.write(newbib)
-                    outf.close()
+                    sys.stdout.write('Searching for update to ' + 
+                                     thisref['ID'] + '...')
+                res = checkRef(thisref, args.confirm)
+                if res:
+                    upcount += 1
+                    bp.entries[j] = res
+                    if not(args.quiet):
+                        sys.stdout.write(thisref['ID'] +
+                                         " updated. Please verify changes.\n")
+                    newbib = to_bibtex(bp)
+                    if upcount + acount % 20 == 0:
+                        outf = codecs.open(args.bibfile, 'w', 'utf-8')
+                        outf.write(newbib)
+                        outf.close()
 
-            else:
-                if not(args.quiet):
-                    sys.stdout.write("No new version found.\n")
+                else:
+                    if not(args.quiet):
+                        sys.stdout.write("No new version found.\n")
 
-        if aphsearch and \
-           (not('arxivsearched' in thisref.keys()) or \
-           (not('Eprint' in thisref.keys()) or \
-            not('eprint' in thisref.keys()))) and \
-           thisref['year'] >= '1991':
-            aphsearch = False
-            if not(args.quiet):
-                sys.stdout.write('No preprint associated with ' +
-                                 thisref['ID'] + ', checking...\n')
-            res = aref(thisref, args.confirm)
-            if res and not('arxivsearched' in thisref.keys()):
-                acount += 1
-                bp.entries[j] = res
+            if aphsearch and \
+               (not('arxivsearched' in thisref.keys()) or \
+               (not('Eprint' in thisref.keys()) or \
+                not('eprint' in thisref.keys()))) and \
+               thisref['year'] >= '1991':
+                aphsearch = False
                 if not(args.quiet):
-                    sys.stdout.write(thisref['ID'] +
-                                     " updated with a preprint. Please \
+                    sys.stdout.write('No preprint associated with ' +
+                                     thisref['ID'] + ', checking...\n')
+                res = aref(thisref, args.confirm)
+                if res and not('arxivsearched' in thisref.keys()):
+                    acount += 1
+                    bp.entries[j] = res
+                    if not(args.quiet):
+                        sys.stdout.write(thisref['ID'] +
+                                         " updated with a preprint. Please \
 verify changes.\n")
-                newbib = to_bibtex(bp)
-                if upcount + acount % 20 == 0:
-                    outf = codecs.open(args.bibfile, 'w', 'utf-8')
-                    outf.write(newbib)
-                    outf.close()
-            elif 'arxivsearched' in thisref.keys():
-                if not(args.quiet):
-                    sys.stdout.write("No preprint found. Will not search \
+                    newbib = to_bibtex(bp)
+                    if upcount + acount % 20 == 0:
+                        outf = codecs.open(args.bibfile, 'w', 'utf-8')
+                        outf.write(newbib)
+                        outf.close()
+                elif 'arxivsearched' in thisref.keys():
+                    if not(args.quiet):
+                        sys.stdout.write("No preprint found. Will not search \
 again.\n")
-            else:
-                if not(args.quiet):
-                    sys.stdout.write("No preprint found.\n")
+                else:
+                    if not(args.quiet):
+                        sys.stdout.write("No preprint found.\n")
 
-outf = codecs.open(args.bibfile, 'w', 'utf-8')
-try:
-    outf.write(newbib)
-except:
-    outf.write(to_bibtex(bp))
-outf.close()
+    outf = codecs.open(args.bibfile, 'w', 'utf-8')
+    try:
+        outf.write(newbib)
+    except:
+        outf.write(to_bibtex(bp))
+    outf.close()
 
-if not(args.quiet):
-    sys.stdout.write(str(upcount) +
-                     ' reference(s) updated with journal articles.\n')
-if args.arXiv and not(args.quiet):
-    sys.stdout.write(str(acount) + ' reference(s) updated with preprints.\n')
+    if not(args.quiet):
+        sys.stdout.write(str(upcount) +
+                         ' reference(s) updated with journal articles.\n')
+    if args.arXiv and not(args.quiet):
+        sys.stdout.write(str(acount) + 
+                         ' reference(s) updated with preprints.\n')
+
+
+if __name__ == "__main__":
+    main()
