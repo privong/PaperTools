@@ -30,6 +30,7 @@ def main():
         inf = open(texfile, 'r')
     else:
         sys.stderr.write('Error opening: ' + texfile + '. Not found.\n')
+        sys.exit(-1)
 
     keeplist = {}
     for line in inf:
@@ -39,11 +40,14 @@ def main():
                 macros.pop(macro)
     inf.close()
 
-    sys.stdout.write('Finished searching ' + texfile +
-                     '. Please copy the following macros into your \
+    sys.stdout.write('Finished searching ' + texfile)
+    if len(keeplist):
+        sys.stdout.write('. Please copy the following macros into your \
 manuscript:\n\n')
-    for macro in keeplist:
-        sys.stdout.write(keeplist[macro])
+        for macro in keeplist:
+            sys.stdout.write(keeplist[macro])
+    else:
+        sys.stdout.write('. No macros need to be copied.\n')
 
 
 if __name__ == "__main__":
