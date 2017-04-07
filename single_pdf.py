@@ -1,21 +1,43 @@
 #!/usr/bin/env python
+"""
+Combine multiple PDFs into a single PDF, in the order specified on the
+command line.
 
-from PyPDF2 import PdfFileReader, PdfFileWriter
+Requires the PyPDF2 module.
+"""
+
+
 import argparse
+try:
+    from PyPDF2 import PdfFileReader, PdfFileWriter
+except ImportError:
+    import sys
+    sys.stderr.write("Error: could not import PyPDF2.\n\n")
+    sys.exit(-1)
 
-parser = argparse.ArgumentParser(description='Combine a bunch of pdf files \
-                    into a single pdf file.')
-parser.add_argument('pdfs', type=str, nargs='+', help='PDFs to combine \
-                    (in the order of combination).')
-parser.add_argument('-outfile', action='store', default='output.pdf',
-                    help='Name of output file.')
-args = parser.parse_args()
 
-output = PdfFileWriter()
+def main():
+    """
+    main routine
+    """
 
-for pdf in args.pdfs:
-    inpdf = PdfFileReader(open(pdf, 'rb'))
-    for i in range(inpdf.getNumPages()):
-        output.addPage(inpdf.getPage(i))
+    parser = argparse.ArgumentParser(description='Combine a bunch of pdf files \
+                        into a single pdf file.')
+    parser.add_argument('pdfs', type=str, nargs='+', help='PDFs to combine \
+                        (in the order of combination).')
+    parser.add_argument('-outfile', action='store', default='output.pdf',
+                        help='Name of output file.')
+    args = parser.parse_args()
 
-output.write(open(args.outfile, "wb"))
+    output = PdfFileWriter()
+
+    for pdf in args.pdfs:
+        inpdf = PdfFileReader(open(pdf, 'rb'))
+        for i in range(inpdf.getNumPages()):
+            output.addPage(inpdf.getPage(i))
+
+    output.write(open(args.outfile, "wb"))
+
+
+if __name__ == "__main__":
+    main()

@@ -8,7 +8,11 @@ https://pypi.python.org/pypi/textstat
 """
 
 import sys
-from textstat.textstat import textstat
+try:
+    from textstat.textstat import textstat
+except ImportError:
+    sys.stderr.write("Error: could not import textstat module.\n\n")
+    sys.exit(-1)
 
 
 def main():
