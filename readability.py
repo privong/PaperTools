@@ -29,6 +29,16 @@ def main():
     text = inf.read()
     inf.close()
 
+    lexcount = textstat.lexicon_count(text)
+
+    sys.stdout.write('Lexicon count: {0:d}\n'.format(lexcount))
+    
+    # reading time in minutes
+    # assumes 180 WPM plus some offset
+    tread = (lexcount + 250) / 180.
+
+    sys.stdout.write('Estimating reading time: {0:1.1f} minutes.\n'.format(tread))
+
     ease = textstat.flesch_reading_ease(text)
     grade = textstat.flesch_kincaid_grade(text)
 
