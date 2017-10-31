@@ -54,7 +54,7 @@ puctuation:\n".format(nlines))
                  not re.search('\!', line[-3:]):
                 sys.stdout.write("Line {0:d} may be missing end \
 punctuation:\n".format(nlines))
-                sys.stdout.write('\t' + line[-10:] + '\n')
+                sys.stdout.write('\t' + line[-25:] + '\n')
         nlines += 1
 
     texfile.close()
