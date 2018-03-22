@@ -13,4 +13,4 @@ Scripts and LaTeX files for assistance in writing papers.
 * `readability.py` Compute the [Flesch–Kincaid readability tests](https://en.wikipedia.org/wiki/Flesch%E2%80%93Kincaid_readability_tests) on a given text. Requires the [textstat](https://pypi.python.org/pypi/textstat) python module.
 * `single_pdf.py` Combine multiple pdfs into a single file. (Useful for proposals which lack TeX templates).
 
-`check_ms.sh` trys to run [proselint](https://github.com/amperser/proselint/), so install that if you would like writing commentary.
+`check_ms.sh` tries to run [proselint](https://github.com/amperser/proselint/), so install that if you would like writing commentary.
