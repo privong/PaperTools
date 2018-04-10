@@ -6,6 +6,8 @@ python /home/george/astro/software/Astronomy/PaperTools/punctuation_check.py $1
 echo ""
 python /home/george/astro/software/Astronomy/PaperTools/readability.py $1
 echo ""
+texcount -merge -incbib -dir -sub=none -utf8 -sum $1
+echo ""
 proselint $1
 echo ""
 python /home/george/astro/software/Astronomy/PaperTools/macro_check.py $1
