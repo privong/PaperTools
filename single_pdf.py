@@ -7,11 +7,11 @@ Requires the PyPDF2 module.
 """
 
 
+import sys
 import argparse
 try:
     from PyPDF2 import PdfFileReader, PdfFileWriter
 except ImportError:
-    import sys
     sys.stderr.write("Error: could not import PyPDF2.\n\n")
     sys.exit(-1)
 
@@ -32,9 +32,12 @@ def main():
     output = PdfFileWriter()
 
     for pdf in args.pdfs:
-        inpdf = PdfFileReader(open(pdf, 'rb'))
-        for i in range(inpdf.getNumPages()):
-            output.addPage(inpdf.getPage(i))
+        try:
+            inpdf = PdfFileReader(open(pdf, 'rb'))
+            for i in range(inpdf.getNumPages()):
+                output.addPage(inpdf.getPage(i))
+        except:
+            sys.stderr.write("Error opening " + pdf + "\n")
 
     output.write(open(args.outfile, "wb"))
 
