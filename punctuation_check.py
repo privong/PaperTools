@@ -9,25 +9,33 @@ import os
 import sys
 import argparse
 
+
+def getargs():
+    """
+    Parse and return command line arguments
+    """
+    parser = argparse.ArgumentParser(description="Scan a (La)TeX or \
+Markdown file to find lines that are missing terminating punctuation.")
+    parser.add_argument('infile', type=str, default=None,
+                        help="Name of (La)TeX or Markdown file to scan.")
+    return parser.parse_args()
+
+
 def main():
     """
     main routine
     """
-    parser = argparse.ArgumentParser(description="Scan a (La)TeX file to \
-find lines that are missing terminating punctuation.")
-    parser.add_argument('texfile', type=str, default=None,
-                        help="Name of (La)TeX file to scan.")
-    args = parser.parse_args()
 
+    args = getargs()
 
-    if not os.path.isfile(args.texfile):
-        sys.stderr.write(args.texfile + " could not be located.\n")
+    if not os.path.isfile(args.infile):
+        sys.stderr.write(args.infile + " could not be located.\n")
         sys.exit(1)
 
-    texfile = open(args.texfile, 'r')
+    infile = open(args.infile, 'r')
 
     nlines = 1
-    for line in texfile.readlines():
+    for line in infile.readlines():
         line = line.rstrip('\n')
         if len(line) < 2:
             # empty or uninteresting line, skip
@@ -56,7 +64,7 @@ punctuation:\n".format(nlines))
                 sys.stdout.write('\t' + line[-25:] + '\n')
         nlines += 1
 
-    texfile.close()
+    infile.close()
 
 
 if __name__ == "__main__":
