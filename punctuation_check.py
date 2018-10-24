@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Scan a (La)TeX file to find missing puctuation.
+Scan a (La)TeX or Markdown file to find missing puctuation.
 Assumes the file is created with a single sentence per line.
 """
 
@@ -8,7 +8,6 @@ import re
 import os
 import sys
 import argparse
-
 
 def main():
     """
@@ -40,8 +39,8 @@ find lines that are missing terminating punctuation.")
         elif line[-1] == '}' or line[-2:] == '\\\\':
             # end of a command, skip line
             continue
-        elif line[0] == '%':
-            # skip lines that are entirely comments
+        elif line[0] == '%' or line[0] == '#':
+            # skip lines that are entirely comments, for TeX and markdown
             continue
         else:
             if re.search(';', line[-2:]) or \
