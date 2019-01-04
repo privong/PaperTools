@@ -35,10 +35,19 @@ def main():
     infile = open(args.infile, 'r')
 
     nlines = 1
+    YAMLhead = False
     for line in infile.readlines():
         line = line.rstrip('\n')
         if len(line) < 2:
             # empty or uninteresting line, skip
+            continue
+        elif line[:3] == '---':
+            # YAML header block
+            if not YAMLhead:
+                YAMLhead = True
+            else:
+                YAMLhead = False
+        elif YAMLhead:
             continue
         elif line[0] == '\\':
             # LaTex command, skip line
