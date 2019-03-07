@@ -46,7 +46,7 @@ def checkRef(entry, args):
                                   'volume', 'page', 'bibcode'])
         res.execute()
         try:
-            for i in res.articles:
+            for i in res:
                 try:    # only want things that are published
                     if not(args.quiet):
                         print(i.pub)
@@ -74,7 +74,7 @@ def checkRef(entry, args):
                         entry['abstract'] = i.abstract
                     except:
                         pass
-                    entry['link'] = i.url[0]
+                    #entry['link'] = i.url[0]
                     entry['year'] = i.year
                     try:
                         entry['volume'] = i.volume
@@ -206,7 +206,6 @@ arXiv ID.\n')
                 else:
                     if not(args.quiet):
                         sys.stdout.write("No new version found.\n")
-                exit()
 
             if aphsearch and \
                (not('arxivsearched' in thisref.keys()) or \
