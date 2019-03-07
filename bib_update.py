@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 """
 Load a bibtext file, find the arXiv entries within the past X years and
 query ADS to see if the paper has been published. If so, update the bibtex
@@ -25,7 +25,7 @@ except ImportError:
     sys.exit(-1)
 
 
-def checkRef(entry, confirm=False):
+def checkRef(entry, args):
     """
     Check ADS for an updated reference
 
@@ -40,9 +40,13 @@ def checkRef(entry, confirm=False):
         - pub(lication) (does not currently do abbreviations)
     """
     if 'eprint' in entry.keys():
-        res = ads.query("arXiv:" + entry['eprint'])
+        res = ads.SearchQuery(q="arXiv:" + entry['eprint'],
+                              fl=['pub', 'author', 'title', 'year',
+                                  'journal', 'doi', 'abstract', 'url',
+                                  'volume', 'page', 'bibcode'])
+        res.execute()
         try:
-            for i in res:
+            for i in res.articles:
                 try:    # only want things that are published
                     if not(args.quiet):
                         print(i.pub)
@@ -50,7 +54,7 @@ def checkRef(entry, confirm=False):
                         continue
                 except:
                     continue
-                if confirm:
+                if args.confirm:
                     print(entry['author'].split(',')[0], entry['title'], \
                           entry['year'])
                     print(i.author[0], i.title[0], i.year)
@@ -145,7 +149,7 @@ entries if not present.')
 
     if os.path.isfile(args.bibfile):
         bib = codecs.open(args.bibfile, 'r', 'utf-8')
-        bp = BibTexParser(bib.read())
+        bp = BibTexParser(bib.read(), common_strings = True)
         bib.close()
     else:
         sys.stderr.write("Error, could not open: " + args.bibfile + ".\n")
@@ -186,7 +190,7 @@ arXiv ID.\n')
                 if not(args.quiet):
                     sys.stdout.write('Searching for update to ' + 
                                      thisref['ID'] + '...')
-                res = checkRef(thisref, args.confirm)
+                res = checkRef(thisref, args)
                 if res:
                     upcount += 1
                     bp.entries[j] = res
@@ -202,6 +206,7 @@ arXiv ID.\n')
                 else:
                     if not(args.quiet):
                         sys.stdout.write("No new version found.\n")
+                exit()
 
             if aphsearch and \
                (not('arxivsearched' in thisref.keys()) or \
