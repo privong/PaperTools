@@ -2,6 +2,7 @@
 
 REGEX_TEX="tex$"
 REGEX_HTML="html$"
+REGEX_MUTT="/tmp/mutt-*"
 
 if [[ $1 =~ $REGEX_TEX ]] ;
 then
@@ -13,8 +14,13 @@ else
     aspell check $1
 fi
 
-echo ""
-python /home/george/astro/software/Astronomy/PaperTools/punctuation_check.py $1
+if [[ $1 =~ $REGEX_MUTT ]];
+then
+    echo "\nSkipping line check for mutt email message."
+else
+    echo ""
+    python /home/george/astro/software/Astronomy/PaperTools/punctuation_check.py $1
+fi
 
 if [[ $1 =~ $REGEX_TEX ]] ;
 then
