@@ -16,7 +16,7 @@ fi
 
 if [[ $1 =~ $REGEX_MUTT ]];
 then
-    echo "\nSkipping line check for mutt email message."
+    echo "Skipping line check for mutt email message."
 else
     echo ""
     python /home/george/astro/software/Astronomy/PaperTools/punctuation_check.py $1
