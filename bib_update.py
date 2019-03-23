@@ -77,7 +77,8 @@ def checkRef(entry, args):
                     #entry['link'] = i.url[0]
                     entry['year'] = i.year
                     try:
-                        entry['volume'] = i.volume
+                        if entry['volume']:
+                            entry['volume'] = i.volume
                     except:
                         pass
                     try:
