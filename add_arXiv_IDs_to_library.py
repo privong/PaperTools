@@ -49,9 +49,13 @@ def updatebibtexkey(ref):
 
     parsed_ref = BibTexParser(ref)
     oldkey = parsed_ref.entries[0]['ID']
-    year = oldkey.split('arXiv')[0]
+    # year is the first four entries in the bibcode
+    year = oldkey[0:4]
     newkey = getfirstauthor(parsed_ref.entries[0]['author'])
     newkey += year
+
+    # remove spaces in the key
+    newkey = ''.join(newkey.split())
 
     parsed_ref.entries[0]['ID'] = newkey
 
