@@ -117,12 +117,13 @@ bibtex file with subsequently published papers.")
     newcount = 0
     # now get bibtex entries from ADS for all new articles
     for ID in IDs:
+        ID = ID.rstrip('\n')
         if ID in arxivlist or ID[0] == "#":
             # skip entries that we already have and comments
             continue
 
         # get ADS entry
-        newref = getref(ID.rstrip('\n'), args)
+        newref = getref(ID, args)
         newcount += 1
         newref = updatebibtexkey(newref)
 
