@@ -4,6 +4,7 @@ Scripts and LaTeX files for assistance in writing papers.
 
 ## Contents
 
+* `add_arXiv_IDs_to_library.py` Given a list of arXiv IDs, retrieve BibTex records for those from NASA ADS
 * `bib_update.py`	Search a bibtex file and query ADS to update arXiv records w/ published references
 * `bibcode_convert.py` Convert long-form journal names into the ApJ short form requivalents. (IN PROGRESS)
 * `check_ms.sh` Run through the final manuscript checks (spelling, complete sentences).
