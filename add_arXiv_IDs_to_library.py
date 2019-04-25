@@ -10,6 +10,7 @@ import os
 import shutil
 import codecs   # for unicode
 import argparse
+import datetime
 try:
     import ads  # https://github.com/andycasey/ads
 except ImportError:
@@ -35,19 +36,19 @@ def getref(arXiv, args):
     if refbibtex:
         if not args.quiet:
             sys.stdout.write('Retrieved BibTeX for ' + arXiv + '.\n')
-        return refbibtex
+        return BibTexParser(refbibtex)
 
     return False
 
 
-def updatebibtexkey(ref):
+def updatebibtexkey(parsed_ref):
     """
-    Update the BibTeX key so that it is AuthorYear
+    Update the BibTeX key so that it is AuthorYear.
+
+    Requires a bibtex parsed entry
+
     """
 
-    bp = BibTexWriter()
-
-    parsed_ref = BibTexParser(ref)
     oldkey = parsed_ref.entries[0]['ID']
     # year is the first four entries in the bibcode
     year = oldkey[0:4]
@@ -59,7 +60,7 @@ def updatebibtexkey(ref):
 
     parsed_ref.entries[0]['ID'] = newkey
 
-    return bp.write(parsed_ref)
+    return parsed_ref
 
 
 def getfirstauthor(BTauthorlist):
@@ -86,7 +87,16 @@ bibtex file with subsequently published papers.")
     parser.add_argument('--quiet', action='store_true', default=False,
                         help='Suppress printed output. (Overriden by \
 --confirm).')
+    parser.add_argument('--owner', action="store", default=None,
+                        type=str,
+                        help="Name to insert into BibTex entry under the \
+'owner' field.")
     args = parser.parse_args()
+
+    bpw = BibTexWriter()
+
+    # get today's timestamp for adding to the BibTex file
+    timestamp = datetime.datetime.now().strftime("%Y.%m.%d")
 
     # make sure we can open the specified files
     if os.path.isfile(args.IDfile):
@@ -124,10 +134,15 @@ bibtex file with subsequently published papers.")
 
         # get ADS entry
         newref = getref(ID, args)
+        # add owner information
+        if args.owner is not None:
+            newref.entries[0]['owner'] = args.owner
+        # add timestamp information
+        newref.entries[0]['timestamp'] = timestamp
         newcount += 1
         newref = updatebibtexkey(newref)
 
-        outf.write(newref)
+        outf.write(bpw.write(newref))
 
     outf.close()
 
