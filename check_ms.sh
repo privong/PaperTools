@@ -10,6 +10,9 @@ then
 elif [[ $1 =~ $REGEX_HTML ]];
 then
     aspell -H check $1
+elif [[ $1 =~ $REGEX_MUTT ]];
+then
+    aspell -e check $1
 else
     aspell check $1
 fi
