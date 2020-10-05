@@ -3,6 +3,7 @@
 REGEX_TEX="tex$"
 REGEX_HTML="html$"
 REGEX_MUTT="/tmp/mutt-*"
+REGEX_MD="md$"
 
 if [[ $1 =~ $REGEX_TEX ]] ;
 then
@@ -13,6 +14,9 @@ then
 elif [[ $1 =~ $REGEX_MUTT ]];
 then
     aspell -e check $1
+elif [[ $1 =~ $REGEX_MD ]];
+then
+    aspell -M check $1
 else
     aspell check $1
 fi
