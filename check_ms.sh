@@ -2,8 +2,10 @@
 
 REGEX_TEX="tex$"
 REGEX_HTML="html$"
-REGEX_MUTT="/tmp/mutt-*"
+REGEX_MUTT="/mutt-*"
 REGEX_MD="md$"
+
+CHECK_PREFIX="$HOME/astro/software/PaperTools/"
 
 if [[ $1 =~ $REGEX_TEX ]] ;
 then
@@ -24,9 +26,12 @@ fi
 if [[ $1 =~ $REGEX_MUTT ]];
 then
     echo "Skipping line check for mutt email message."
+    echo "Removing 'Disarmed', 'External' tags from subject lines."
+    sed -i -e 's/{Disarmed}//' $1
+    sed -i -e 's/{External}//' $1
 else
     echo ""
-    python /home/george/astro/software/Astronomy/PaperTools/punctuation_check.py $1
+    python $CHECK_PREFIX/punctuation_check.py $1
 fi
 
 if [[ $1 =~ $REGEX_TEX ]] ;
@@ -35,11 +40,11 @@ then
     texcount -merge -incbib -dir -sub=none -utf8 -sum $1
 
     echo ""
-    python /home/george/astro/software/Astronomy/PaperTools/macro_check.py $1
+    python $CHECK_PREFIX/macro_check.py $1
 fi
 
 echo ""
-python /home/george/astro/software/Astronomy/PaperTools/readability.py $1
+python $CHECK_PREFIX/readability.py $1
 
 echo ""
 proselint $1
